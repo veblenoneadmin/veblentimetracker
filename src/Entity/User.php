@@ -10,6 +10,7 @@
 namespace App\Entity;
 
 use App\Export\Annotation as Exporter;
+use App\Repository\UserRepository;
 use App\Utils\StringHelper;
 use App\Validator\Constraints as Constraints;
 use App\WorkingTime\Mode\WorkingTimeModeNone;
@@ -33,7 +34,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Table(name: 'kimai2_users')]
 #[ORM\UniqueConstraint(columns: ['username'])]
 #[ORM\UniqueConstraint(columns: ['email'])]
-#[ORM\Entity(repositoryClass: 'App\Repository\UserRepository')]
+#[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\ChangeTrackingPolicy('DEFERRED_EXPLICIT')]
 #[UniqueEntity('username')]
 #[UniqueEntity('email')]
@@ -752,9 +753,6 @@ class User implements UserInterface, EquatableInterface, ThemeUserInterface, Pas
      * This method should not be called by plugins and returns true on success or false on a failure.
      *
      * @internal immutable property that cannot be set by plugins
-     * @param bool $canSeeAllData
-     * @return bool
-     * @throws Exception
      */
     public function initCanSeeAllData(bool $canSeeAllData): bool
     {

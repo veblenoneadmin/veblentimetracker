@@ -19,6 +19,7 @@ use App\Form\Model\MultiUserTimesheet;
 use App\Form\TimesheetAdminEditForm;
 use App\Form\TimesheetMultiUserEditForm;
 use App\Repository\Query\TimesheetQuery;
+use App\Repository\Query\TimesheetQueryHint;
 use App\Utils\PageSetup;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Form\FormInterface;
@@ -49,11 +50,11 @@ final class TimesheetTeamController extends TimesheetAbstractController
         return $this->index($query, $request, 'admin_timesheet', 'admin_timesheet_paginated', TimesheetMetaDisplayEvent::TEAM_TIMESHEET);
     }
 
-    #[Route(path: '/export/', name: 'admin_timesheet_export', methods: ['GET', 'POST'])]
+    #[Route(path: '/export/{exporter}', name: 'admin_timesheet_export', methods: ['GET', 'POST'])]
     #[IsGranted('export_other_timesheet')]
-    public function exportAction(Request $request, ServiceExport $serviceExport): Response
+    public function exportAction(string $exporter, Request $request, ServiceExport $serviceExport): Response
     {
-        return $this->export($request, $serviceExport);
+        return $this->export($exporter, $request, $serviceExport);
     }
 
     #[Route(path: '/{id}/edit', name: 'admin_timesheet_edit', methods: ['GET', 'POST'])]
@@ -111,6 +112,7 @@ final class TimesheetTeamController extends TimesheetAbstractController
                     $tags[] = $tag;
                 }
 
+                $newTimesheets = [];
                 foreach ($allUsers as $user) {
                     $newTimesheet = $entry->createCopy();
                     $newTimesheet->setUser($user);
@@ -118,6 +120,11 @@ final class TimesheetTeamController extends TimesheetAbstractController
                         $newTimesheet->addTag($tag);
                     }
                     $this->service->prepareNewTimesheet($newTimesheet, $request);
+                    $this->service->validateTimesheet($newTimesheet);
+                    $newTimesheets[] = $newTimesheet;
+                }
+
+                foreach ($newTimesheets as $newTimesheet) {
                     $this->service->saveNewTimesheet($newTimesheet);
                 }
 
@@ -174,6 +181,7 @@ final class TimesheetTeamController extends TimesheetAbstractController
     protected function prepareQuery(TimesheetQuery $query): void
     {
         $query->setCurrentUser($this->getUser());
+        $query->addQueryHint(TimesheetQueryHint::USER_PREFERENCES); // e.g. for latest approval
     }
 
     protected function getCreateForm(Timesheet $entry): FormInterface
@@ -223,11 +231,6 @@ final class TimesheetTeamController extends TimesheetAbstractController
     protected function getEditRoute(): string
     {
         return 'admin_timesheet_edit';
-    }
-
-    protected function getExportRoute(): string
-    {
-        return 'admin_timesheet_export';
     }
 
     protected function getMultiUpdateRoute(): string

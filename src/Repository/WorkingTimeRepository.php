@@ -66,6 +66,9 @@ class WorkingTimeRepository extends EntityRepository
         return $qb->getQuery()->getResult();
     }
 
+    /**
+     * @deprecated since 2.25.0 - kept for BC with old plugin versions
+     */
     public function getLatestApproval(User $user): ?WorkingTime
     {
         $qb = $this->createQueryBuilder('w');
@@ -89,6 +92,24 @@ class WorkingTimeRepository extends EntityRepository
             ->setParameter('date', $date)
         ;
 
-        return $qb->getQuery()->getOneOrNullResult(); // @phpstan-ignore-line
+        return $qb->getQuery()->getOneOrNullResult();
+    }
+
+    public function getLatestApprovalDate(User $user): ?\DateTimeInterface
+    {
+        $qb = $this->createQueryBuilder('w');
+        $qb->select($qb->expr()->max('(DATE(w.date))'))
+            ->where($qb->expr()->eq('w.user', ':user'))
+            ->setParameter('user', $user->getId())
+            ->andWhere($qb->expr()->isNotNull('w.approvedAt'))
+        ;
+
+        $date = $qb->getQuery()->getSingleScalarResult();
+
+        if ($date === null) {
+            return null;
+        }
+
+        return new \DateTimeImmutable($date . ' 00:00:00', new \DateTimeZone($user->getTimezone()));
     }
 }

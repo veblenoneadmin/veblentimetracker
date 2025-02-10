@@ -31,7 +31,7 @@ final class LocaleFormatter
     private ?NumberFormatter $moneyFormatter = null;
     private ?NumberFormatter $moneyFormatterNoCurrency = null;
 
-    public function __construct(private LocaleService $localeService, private string $locale)
+    public function __construct(private readonly LocaleService $localeService, private readonly string $locale)
     {
     }
 
@@ -306,6 +306,11 @@ final class LocaleFormatter
     public function monthName(\DateTimeInterface $dateTime, bool $withYear = false): string
     {
         return $this->formatIntl($dateTime, ($withYear ? 'LLLL yyyy' : 'LLLL'));
+    }
+
+    public function quarterName(\DateTimeInterface $dateTime, bool $withYear = false): string
+    {
+        return $this->formatIntl($dateTime, ($withYear ? 'QQQ yyyy' : 'QQQ'));
     }
 
     public function dayName(\DateTimeInterface $dateTime, bool $short = false): string

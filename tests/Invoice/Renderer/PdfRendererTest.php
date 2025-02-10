@@ -34,12 +34,12 @@ class PdfRendererTest extends KernelTestCase
     {
         $env = new Environment(new ArrayLoader([]));
         $sut = new PdfRenderer($env, $this->createMock(HtmlToPdfConverter::class));
-        $this->assertTrue($sut->supports($this->getInvoiceDocument('default.pdf.twig', true)));
-        $this->assertTrue($sut->supports($this->getInvoiceDocument('service-date.pdf.twig')));
-        $this->assertFalse($sut->supports($this->getInvoiceDocument('timesheet.html.twig')));
-        $this->assertFalse($sut->supports($this->getInvoiceDocument('company.docx', true)));
-        $this->assertFalse($sut->supports($this->getInvoiceDocument('spreadsheet.xlsx', true)));
-        $this->assertFalse($sut->supports($this->getInvoiceDocument('open-spreadsheet.ods', true)));
+        self::assertTrue($sut->supports($this->getInvoiceDocument('default.pdf.twig', true)));
+        self::assertTrue($sut->supports($this->getInvoiceDocument('service-date.pdf.twig')));
+        self::assertFalse($sut->supports($this->getInvoiceDocument('timesheet.html.twig')));
+        self::assertFalse($sut->supports($this->getInvoiceDocument('company.docx', true)));
+        self::assertFalse($sut->supports($this->getInvoiceDocument('spreadsheet.xlsx', true)));
+        self::assertFalse($sut->supports($this->getInvoiceDocument('open-spreadsheet.ods', true)));
     }
 
     public function testRenderAttachment(): void
@@ -64,9 +64,9 @@ class PdfRendererTest extends KernelTestCase
         $document = $this->getInvoiceDocument('default.pdf.twig', true);
 
         $response = $sut->render($document, $model);
-        $this->assertEquals('application/pdf', $response->headers->get('Content-Type'));
-        $this->assertStringContainsString('attachment; filename', $response->headers->get('Content-Disposition'));
-        $this->assertNotEmpty($response->getContent());
+        self::assertEquals('application/pdf', $response->headers->get('Content-Type'));
+        self::assertStringContainsString('attachment; filename', $response->headers->get('Content-Disposition'));
+        self::assertNotEmpty($response->getContent());
     }
 
     public function testRenderInline(): void
@@ -93,8 +93,8 @@ class PdfRendererTest extends KernelTestCase
 
         $sut->setDispositionInline(true);
         $response = $sut->render($document, $model);
-        $this->assertStringContainsString('inline; filename', $response->headers->get('Content-Disposition'));
-        $this->assertNotEmpty($response->getContent());
+        self::assertStringContainsString('inline; filename', $response->headers->get('Content-Disposition'));
+        self::assertNotEmpty($response->getContent());
     }
 
     public function testRenderAll(): void
@@ -102,6 +102,7 @@ class PdfRendererTest extends KernelTestCase
         $kernel = self::bootKernel();
         /** @var Environment $twig */
         $twig = self::getContainer()->get('twig');
+        /** @var RequestStack $stack */
         $stack = self::getContainer()->get('request_stack');
         /** @var string $cacheDir */
         $cacheDir = $kernel->getContainer()->getParameter('kernel.cache_dir');
@@ -141,9 +142,9 @@ class PdfRendererTest extends KernelTestCase
             $document = new InvoiceDocument(new \SplFileInfo($filename));
 
             $response = $sut->render($document, $model);
-            $this->assertEquals('application/pdf', $response->headers->get('Content-Type'));
-            $this->assertStringContainsString('attachment; filename', $response->headers->get('Content-Disposition'));
-            $this->assertNotEmpty($response->getContent());
+            self::assertEquals('application/pdf', $response->headers->get('Content-Type'));
+            self::assertStringContainsString('attachment; filename', $response->headers->get('Content-Disposition'));
+            self::assertNotEmpty($response->getContent());
         }
     }
 }

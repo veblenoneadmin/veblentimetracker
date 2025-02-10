@@ -15,6 +15,7 @@ use App\Tests\Configuration\TestConfigLoader;
 use App\Tests\Event\ThemeJavascriptTranslationsEventTest;
 use App\Tests\Mocks\SystemConfigurationFactory;
 use App\Twig\Runtime\ThemeExtension;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bridge\Twig\AppVariable;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -72,7 +73,7 @@ class ThemeEventExtensionTest extends TestCase
     {
         $mock = $this->getMockBuilder(UsernamePasswordToken::class)->onlyMethods(['getUser'])->disableOriginalConstructor()->getMock();
         $mock->method('getUser')->willReturn(new User());
-        /** @var UsernamePasswordToken $token */
+        /** @var UsernamePasswordToken&MockObject $token */
         $token = $mock;
 
         $tokenStorage = new TokenStorage();
@@ -108,7 +109,7 @@ class ThemeEventExtensionTest extends TestCase
         self::assertCount(ThemeJavascriptTranslationsEventTest::COUNTER, $values);
     }
 
-    public function getProgressbarColors()
+    public static function getProgressbarColors()
     {
         yield ['bg-red', 100, false];
         yield ['bg-red', 91, false];
@@ -154,18 +155,18 @@ class ThemeEventExtensionTest extends TestCase
     public function testGetTitle(): void
     {
         $sut = $this->getSut(false);
-        $this->assertEquals('Kimai – foo', $sut->generateTitle());
-        $this->assertEquals('sdfsdf | Kimai – foo', $sut->generateTitle('sdfsdf | '));
-        $this->assertEquals('<b>Kimai</b> ... foo', $sut->generateTitle('<b>', '</b> ... '));
-        $this->assertEquals('Kimai | foo', $sut->generateTitle(null, ' | '));
+        self::assertEquals('Kimai – foo', $sut->generateTitle());
+        self::assertEquals('sdfsdf | Kimai – foo', $sut->generateTitle('sdfsdf | '));
+        self::assertEquals('<b>Kimai</b> ... foo', $sut->generateTitle('<b>', '</b> ... '));
+        self::assertEquals('Kimai | foo', $sut->generateTitle(null, ' | '));
     }
 
     public function testGetBrandedTitle(): void
     {
         $sut = $this->getSut(false, 'MyCompany');
-        $this->assertEquals('Kimai – foo', $sut->generateTitle());
-        $this->assertEquals('sdfsdf | Kimai – foo', $sut->generateTitle('sdfsdf | '));
-        $this->assertEquals('<b>Kimai</b> ... foo', $sut->generateTitle('<b>', '</b> ... '));
-        $this->assertEquals('Kimai | foo', $sut->generateTitle(null, ' | '));
+        self::assertEquals('Kimai – foo', $sut->generateTitle());
+        self::assertEquals('sdfsdf | Kimai – foo', $sut->generateTitle('sdfsdf | '));
+        self::assertEquals('<b>Kimai</b> ... foo', $sut->generateTitle('<b>', '</b> ... '));
+        self::assertEquals('Kimai | foo', $sut->generateTitle(null, ' | '));
     }
 }

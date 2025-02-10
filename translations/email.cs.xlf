@@ -40,23 +40,47 @@
       </trans-unit>
       <trans-unit id="yohIAA_" resname="absence_created_supervisor_subject" xml:space="preserve">
         <source>absence_created_supervisor_subject</source>
-        <target state="translated">Nová nepřítomnost | %absence_user% | %absence_type%</target>
+        <target state="translated">Nová nepřítomnost | %user% | %type%</target>
       </trans-unit>
       <trans-unit id="wwLx._J" resname="absence_created_supervisor_message" xml:space="preserve">
-        <source>A new absence was created for %absence_user%.
+        <source>A new absence was created for %user%.
 
-%absence_type% - %absence_comment%
+%list%
 
-%absence_list%
+Please review them at: %url%</source>
+        <target state="translated">Pro uživatele %user% byla vytvořena nová nepřítomnost.
 
-Please review them at: %approval_url%</source>
-        <target state="translated">Pro uživatele %absence_user% byla vytvořena nová nepřítomnost.
+%list%
 
-%absence_type% - %absence_comment%
+Prohlédněte si ji prosím na adrese: %url%</target>
+      </trans-unit>
+      <trans-unit id="4nn7Vi1" resname="approval_approved_message" xml:space="preserve">
+        <source>approval_approved_message</source>
+        <target state="translated">Vaše žádost byla schválena uživatelem %created_by%.
 
-%absence_list%
+%list%
 
-Prohlédněte si ji prosím na adrese: %approval_url%</target>
+Všechny žádosti naleznete zde: %url%</target>
+      </trans-unit>
+      <trans-unit id="1q.VHdU" resname="approval_requested_subject" xml:space="preserve">
+        <source>approval_requested_subject</source>
+        <target state="translated">Žádost o schválení: %user%</target>
+      </trans-unit>
+      <trans-unit id="Z172mQ8" resname="approval_requested_message" xml:space="preserve">
+        <source>approval_requested_message</source>
+        <target state="translated">Žádost o schválení pro %user% bylo zadáno.
+
+%list%
+
+Ověřte na tomto odkazu: %url%</target>
+      </trans-unit>
+      <trans-unit id="dvPkiia" resname="approval_rejected_subject" xml:space="preserve">
+        <source>approval_rejected_subject</source>
+        <target state="translated">Vaše žádost byla zamítnuta</target>
+      </trans-unit>
+      <trans-unit id="YdGZyer" resname="approval_approved_subject" xml:space="preserve">
+        <source>approval_approved_subject</source>
+        <target state="translated">Vaše žádost byla schválena</target>
       </trans-unit>
     </body>
   </file>

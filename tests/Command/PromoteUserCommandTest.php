@@ -13,6 +13,7 @@ use App\Command\PromoteUserCommand;
 use App\Entity\User;
 use App\Repository\UserRepository;
 use App\User\UserService;
+use Doctrine\Bundle\DoctrineBundle\Registry;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Console\Exception\RuntimeException;
@@ -35,6 +36,7 @@ class PromoteUserCommandTest extends KernelTestCase
         $container = self::$kernel->getContainer();
 
         $userService = $container->get(UserService::class);
+        self::assertInstanceOf(UserService::class, $userService);
 
         $this->application->add(new PromoteUserCommand($userService));
     }
@@ -77,11 +79,13 @@ class PromoteUserCommandTest extends KernelTestCase
         $commandTester = $this->callCommand('john_user', 'ROLE_TEAMLEAD');
 
         $output = $commandTester->getDisplay();
-        $this->assertStringContainsString('[OK] Role "ROLE_TEAMLEAD" has been added to user "john_user".', $output);
+        self::assertStringContainsString('[OK] Role "ROLE_TEAMLEAD" has been added to user "john_user".', $output);
 
         $container = self::$kernel->getContainer();
+        /** @var Registry $doctrine */
+        $doctrine = $container->get('doctrine');
         /** @var UserRepository $userRepository */
-        $userRepository = $container->get('doctrine')->getRepository(User::class);
+        $userRepository = $doctrine->getRepository(User::class);
         $user = $userRepository->loadUserByIdentifier('john_user');
         self::assertInstanceOf(User::class, $user);
         self::assertTrue($user->hasTeamleadRole());
@@ -92,11 +96,13 @@ class PromoteUserCommandTest extends KernelTestCase
         $commandTester = $this->callCommand('john_user', null, true);
 
         $output = $commandTester->getDisplay();
-        $this->assertStringContainsString('[OK] User "john_user" has been promoted as a super administrator.', $output);
+        self::assertStringContainsString('[OK] User "john_user" has been promoted as a super administrator.', $output);
 
         $container = self::$kernel->getContainer();
+        /** @var Registry $doctrine */
+        $doctrine = $container->get('doctrine');
         /** @var UserRepository $userRepository */
-        $userRepository = $container->get('doctrine')->getRepository(User::class);
+        $userRepository = $doctrine->getRepository(User::class);
         $user = $userRepository->loadUserByIdentifier('john_user');
         self::assertInstanceOf(User::class, $user);
         self::assertTrue($user->isSuperAdmin());
@@ -107,7 +113,7 @@ class PromoteUserCommandTest extends KernelTestCase
         $commandTester = $this->callCommand('susan_super', null, true);
 
         $output = $commandTester->getDisplay();
-        $this->assertStringContainsString('[WARNING] User "susan_super" does already have the super administrator role.', $output);
+        self::assertStringContainsString('[WARNING] User "susan_super" does already have the super administrator role.', $output);
     }
 
     public function testPromoteTeamleadFailsOnTeamlead(): void
@@ -115,7 +121,7 @@ class PromoteUserCommandTest extends KernelTestCase
         $commandTester = $this->callCommand('tony_teamlead', 'ROLE_TEAMLEAD', false);
 
         $output = $commandTester->getDisplay();
-        $this->assertStringContainsString('[WARNING] User "tony_teamlead" did already have "ROLE_TEAMLEAD" role.', $output);
+        self::assertStringContainsString('[WARNING] User "tony_teamlead" did already have "ROLE_TEAMLEAD" role.', $output);
     }
 
     public function testPromoteRoleAndSuperFails(): void

@@ -9,7 +9,6 @@
 
 namespace App\Tests\Repository;
 
-use App\Model\InvoiceDocument;
 use App\Repository\InvoiceDocumentRepository;
 use PHPUnit\Framework\TestCase;
 
@@ -56,7 +55,7 @@ class InvoiceDocumentRepositoryTest extends TestCase
             $sut->getUploadDirectory();
             $this->fail('Expected exception was not raised');
         } catch (\Exception $ex) {
-            $this->assertEquals('Unknown upload directory', $ex->getMessage());
+            self::assertEquals('Unknown upload directory', $ex->getMessage());
         }
 
         $path = realpath(__DIR__ . '/../Invoice/templates/');
@@ -78,7 +77,7 @@ class InvoiceDocumentRepositoryTest extends TestCase
         foreach (self::$testDocuments as $document) {
             $all[] = substr($document, 0, strpos($document, '.'));
         }
-        $all = array_unique(array_values($all));
+        $all = array_unique($all);
         self::assertCount(\count($all), $sut->findAll());
 
         self::assertEquals($path, $sut->getUploadDirectory());
@@ -88,17 +87,16 @@ class InvoiceDocumentRepositoryTest extends TestCase
     {
         $sut = new InvoiceDocumentRepository(self::$defaultDirectories);
         $all = $sut->findAll();
-        $this->assertCount(\count(self::$defaultDocuments), $all);
+        self::assertCount(\count(self::$defaultDocuments), $all);
 
         foreach ($all as $document) {
-            $this->assertTrue(\in_array($document->getName(), self::$defaultDocuments), 'Missing template: ' . $document->getName());
+            self::assertTrue(\in_array($document->getName(), self::$defaultDocuments), 'Missing template: ' . $document->getName());
         }
 
         foreach (self::$defaultDocuments as $filename) {
             $filename = substr($filename, 0, strpos($filename, '.'));
             $actual = $sut->findByName($filename);
-            $this->assertNotNull($actual);
-            $this->assertInstanceOf(InvoiceDocument::class, $actual);
+            self::assertNotNull($actual);
         }
     }
 }

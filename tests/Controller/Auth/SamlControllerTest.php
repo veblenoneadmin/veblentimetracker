@@ -10,16 +10,17 @@
 namespace App\Tests\Controller\Auth;
 
 use App\Configuration\SamlConfiguration;
+use App\Configuration\SamlConfigurationInterface;
 use App\Configuration\SystemConfiguration;
 use App\Controller\Auth\SamlController;
 use App\Saml\SamlAuthFactory;
 use App\Tests\Configuration\TestConfigLoader;
 use App\Tests\Mocks\Saml\SamlAuthFactoryFactory;
+use App\Tests\Mocks\SecurityFactory;
 use App\Tests\Mocks\SystemConfigurationFactory;
 use OneLogin\Saml2\Auth;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Security\Http\SecurityRequestAttributes;
@@ -29,19 +30,14 @@ use Symfony\Component\Security\Http\SecurityRequestAttributes;
  */
 class SamlControllerTest extends TestCase
 {
-    /**
-     * @param array $settings
-     * @param array $loaderSettings
-     * @return SystemConfiguration
-     */
-    protected function getSystemConfigurationMock(array $settings, array $loaderSettings = [])
+    protected function getSystemConfigurationMock(array $settings, array $loaderSettings = []): SystemConfiguration
     {
         $loader = new TestConfigLoader($loaderSettings);
 
         return SystemConfigurationFactory::create($loader, $settings);
     }
 
-    protected function getDefaultSettings(bool $activated = true)
+    protected function getDefaultSettings(bool $activated = true): array
     {
         return [
             'saml' => [
@@ -67,8 +63,13 @@ class SamlControllerTest extends TestCase
 
         $factory = $this->getMockBuilder(SamlAuthFactory::class)->disableOriginalConstructor()->getMock();
 
-        $sut = new SamlController($factory, $this->getSamlConfiguration());
+        $sut = $this->getSut($factory, $this->getSamlConfiguration());
         $sut->assertionConsumerServiceAction();
+    }
+
+    public function getSut(SamlAuthFactory $authFactory, SamlConfigurationInterface $samlConfiguration): SamlController
+    {
+        return new SamlController($authFactory, $samlConfiguration, (new SecurityFactory($this))->create());
     }
 
     public function testMetadataAction(): void
@@ -102,10 +103,9 @@ class SamlControllerTest extends TestCase
         $factory = $this->getMockBuilder(SamlAuthFactory::class)->disableOriginalConstructor()->getMock();
         $factory->expects($this->once())->method('create')->willReturn($oauth);
 
-        $sut = new SamlController($factory, $this->getSamlConfiguration());
+        $sut = $this->getSut($factory, $this->getSamlConfiguration());
         $result = $sut->metadataAction();
 
-        self::assertInstanceOf(Response::class, $result);
         self::assertEquals('xml', $result->headers->get('Content-Type'));
 
         $expected = new \DOMDocument();
@@ -131,7 +131,7 @@ class SamlControllerTest extends TestCase
 
         $factory = $this->getMockBuilder(SamlAuthFactory::class)->disableOriginalConstructor()->getMock();
 
-        $sut = new SamlController($factory, $this->getSamlConfiguration());
+        $sut = $this->getSut($factory, $this->getSamlConfiguration());
         $sut->loginAction($request);
     }
 
@@ -142,7 +142,7 @@ class SamlControllerTest extends TestCase
 
         $factory = $this->getMockBuilder(SamlAuthFactory::class)->disableOriginalConstructor()->getMock();
 
-        $sut = new SamlController($factory, $this->getSamlConfiguration(false));
+        $sut = $this->getSut($factory, $this->getSamlConfiguration(false));
         $sut->loginAction(new Request());
     }
 
@@ -153,7 +153,7 @@ class SamlControllerTest extends TestCase
 
         $factory = $this->getMockBuilder(SamlAuthFactory::class)->disableOriginalConstructor()->getMock();
 
-        $sut = new SamlController($factory, $this->getSamlConfiguration(false));
+        $sut = $this->getSut($factory, $this->getSamlConfiguration(false));
         $sut->metadataAction();
     }
 
@@ -164,7 +164,7 @@ class SamlControllerTest extends TestCase
 
         $factory = $this->getMockBuilder(SamlAuthFactory::class)->disableOriginalConstructor()->getMock();
 
-        $sut = new SamlController($factory, $this->getSamlConfiguration(false));
+        $sut = $this->getSut($factory, $this->getSamlConfiguration(false));
         $sut->logoutAction();
     }
 
@@ -175,7 +175,7 @@ class SamlControllerTest extends TestCase
 
         $factory = $this->getMockBuilder(SamlAuthFactory::class)->disableOriginalConstructor()->getMock();
 
-        $sut = new SamlController($factory, $this->getSamlConfiguration(false));
+        $sut = $this->getSut($factory, $this->getSamlConfiguration(false));
         $sut->assertionConsumerServiceAction();
     }
 }

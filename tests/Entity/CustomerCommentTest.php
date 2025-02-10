@@ -16,16 +16,10 @@ use App\Entity\CustomerComment;
  * @covers \App\Entity\CustomerComment
  * @covers \App\Entity\CommentTableTypeTrait
  */
-class CustomerCommentTest extends AbstractCommentEntityTest
+class CustomerCommentTest extends AbstractCommentEntityTestCase
 {
     protected function getEntity(): CustomerComment
     {
         return new CustomerComment(new Customer('foo'));
-    }
-
-    public function testEntitySpecificMethods(): void
-    {
-        $sut = $this->getEntity();
-        self::assertNotNull($sut->getCustomer());
     }
 }

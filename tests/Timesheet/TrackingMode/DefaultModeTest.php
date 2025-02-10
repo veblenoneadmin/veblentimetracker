@@ -16,18 +16,17 @@ use App\Timesheet\TrackingMode\DefaultMode;
 /**
  * @covers \App\Timesheet\TrackingMode\DefaultMode
  */
-class DefaultModeTest extends AbstractTrackingModeTest
+class DefaultModeTest extends AbstractTrackingModeTestCase
 {
     public function assertDefaultBegin(Timesheet $timesheet): void
     {
         self::assertNotNull($timesheet->getBegin());
-        self::assertInstanceOf(\DateTime::class, $timesheet->getBegin());
     }
 
     /**
      * @return DefaultMode
      */
-    protected function createSut()
+    protected function createSut(string $default = '13:47', bool $allowApiTimes = false): DefaultMode
     {
         return new DefaultMode((new RoundingServiceFactory($this))->create());
     }
