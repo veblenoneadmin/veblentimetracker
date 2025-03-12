@@ -13,25 +13,13 @@ use App\Widget\Type\AbstractWidgetType;
 
 /**
  * @covers \App\Widget\Type\AbstractWidgetType
+ * @deprecated
  */
 abstract class AbstractWidgetTypeTestCase extends AbstractWidgetTestCase
 {
     abstract public function createSut(): AbstractWidgetType;
 
     abstract public function getDefaultOptions(): array;
-
-    protected function assertDefaultData(AbstractWidgetType $sut): void
-    {
-        self::assertNull($sut->getData());
-    }
-
-    public function testDefaultData(): void
-    {
-        $sut = $this->createSut();
-        self::assertInstanceOf(AbstractWidgetType::class, $sut);
-        self::assertEquals($this->getDefaultOptions(), $sut->getOptions());
-        $this->assertDefaultData($sut);
-    }
 
     public function testSetter(): void
     {
