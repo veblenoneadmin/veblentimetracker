@@ -10,6 +10,7 @@
 namespace App\Configuration;
 
 use App\Constants;
+use App\Entity\User;
 
 final class SystemConfiguration
 {
@@ -314,6 +315,18 @@ final class SystemConfiguration
     public function isCalendarDragAndDropCopyData(): bool
     {
         return (bool) $this->find('calendar.dragdrop_data');
+    }
+
+    public function getCalendarGlobalIcalLink(): ?string
+    {
+        $value = $this->find('calendar.global_ical_link');
+        return $value === null ? null : (string) $value;
+    }
+
+    public function getCalendarUserIcalLink(User $user): ?string
+    {
+        $value = $user->getPreferenceValue('user_ical_link');
+        return $value === null ? null : (string) $value;
     }
 
     // ========== Customer configurations ==========

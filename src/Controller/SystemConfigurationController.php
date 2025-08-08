@@ -52,6 +52,7 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\NotNull;
 use Symfony\Component\Validator\Constraints\Range;
 use Symfony\Component\Validator\Constraints\Regex;
+use App\Validator\Constraints\IcalLink;
 
 /**
  * Controller used for executing system relevant tasks.
@@ -595,6 +596,12 @@ final class SystemConfigurationController extends AbstractController
                     (new Configuration('calendar.title_pattern'))
                         ->setTranslationDomain('system-configuration')
                         ->setType(CalendarTitlePatternType::class),
+                    (new Configuration('calendar.global_ical_link'))
+                        ->setTranslationDomain('system-configuration')
+                        ->setType(TextType::class)
+                        ->setRequired(false)
+                        ->setOptions(['help' => 'help.calendar.global_ical_link'])
+                        ->setConstraints([new IcalLink()]),
                 ]),
             (new SystemConfigurationModel('branding'))
                 ->setConfiguration([
