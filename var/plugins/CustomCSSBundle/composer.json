@@ -1,0 +1,61 @@
+{
+    "name": "keleo/custom-css-plugin",
+    "description": "Edit custom CSS rules through an administration screen.",
+    "homepage": "https://www.kimai.org/store/keleo-css-custom-bundle.html",
+    "type": "kimai-plugin",
+    "version": "2.2.0",
+    "keywords": [
+        "kimai",
+        "kimai-plugin"
+    ],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Kevin Papst",
+            "homepage": "https://www.kimai.org"
+        }
+    ],
+    "extra": {
+        "kimai": {
+            "require": 21700,
+            "name": "Custom CSS"
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "KimaiPlugin\\CustomCSSBundle\\": ""
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "symfony/flex": false,
+            "symfony/runtime": false
+        },
+        "platform": {
+            "php": "8.1.3"
+        },
+        "preferred-install": {
+            "*": "dist"
+        },
+        "sort-packages": true
+    },
+    "scripts": {
+        "codestyle": "vendor/bin/php-cs-fixer fix --dry-run --verbose --show-progress=none",
+        "codestyle-fix": "vendor/bin/php-cs-fixer fix",
+        "codestyle-check": "vendor/bin/php-cs-fixer fix --dry-run --verbose --using-cache=no --show-progress=none --format=checkstyle",
+        "phpstan": "vendor/bin/phpstan analyse . --configuration=phpstan.neon --level=9",
+        "linting": [
+            "composer validate --strict --no-check-version",
+            "@codestyle-check",
+            "@phpstan"
+        ]
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.0",
+        "kimai/kimai": "dev-main",
+        "phpstan/phpstan": "^1.0",
+        "phpstan/phpstan-symfony": "^1.0",
+        "symfony/console": "^6.0",
+        "symfony/event-dispatcher": "^6.0"
+    }
+}

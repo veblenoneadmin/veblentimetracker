@@ -1,0 +1,13 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    KimaiPlugin\CustomCSSBundle\:
+        resource: '../../*'
+        exclude: '../../{Resources}'
+
+    KimaiPlugin\CustomCSSBundle\Controller\:
+        resource: '../../Controller'
+        tags: ['controller.service_arguments']
