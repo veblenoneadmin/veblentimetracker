@@ -16,9 +16,14 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Set working directory
 WORKDIR /opt/kimai
 
-# Clone Kimai
-RUN git clone https://github.com/kimai/kimai.git . \
-    && composer install --no-dev --optimize-autoloader
+# Clone Kimai (split into separate steps)
+RUN git clone https://github.com/kimai/kimai.git /tmp/kimai \
+    && cp -r /tmp/kimai/* . \
+    && cp -r /tmp/kimai/.* . || true \
+    && rm -rf /tmp/kimai
+
+# Install dependencies
+RUN composer install --no-dev --optimize-autoloader --no-interaction
 
 # Configure Apache
 ENV APACHE_DOCUMENT_ROOT /opt/kimai/public
