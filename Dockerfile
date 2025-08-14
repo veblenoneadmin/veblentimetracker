@@ -14,10 +14,6 @@ RUN apt-get update && apt-get install -y \
 RUN echo "memory_limit = 512M" >> /usr/local/etc/php/php.ini \
     && echo "max_execution_time = 300" >> /usr/local/etc/php/php.ini
 
-# Configure Apache for port 8080
-RUN echo "Listen 8080" > /etc/apache2/ports.conf \
-    && sed -i 's/:80/:8080/g' /etc/apache2/sites-available/000-default.conf
-
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
@@ -33,9 +29,25 @@ RUN git clone https://github.com/kimai/kimai.git /tmp/kimai \
 # Install dependencies with increased memory
 RUN php -d memory_limit=512M /usr/bin/composer install --no-dev --optimize-autoloader --no-interaction
 
-# Configure Apache DocumentRoot
+# Configure Apache properly
 ENV APACHE_DOCUMENT_ROOT /opt/kimai/public
-RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
+RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf \
+    && sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
+
+# Create a proper Apache virtual host
+RUN echo '<VirtualHost *:80>\n\
+    DocumentRoot /opt/kimai/public\n\
+    <Directory /opt/kimai/public>\n\
+        AllowOverride All\n\
+        Require all granted\n\
+        DirectoryIndex index.php\n\
+    </Directory>\n\
+    <Directory /opt/kimai>\n\
+        Options FollowSymlinks\n\
+    </Directory>\n\
+    ErrorLog ${APACHE_LOG_DIR}/error.log\n\
+    CustomLog ${APACHE_LOG_DIR}/access.log combined\n\
+</VirtualHost>' > /etc/apache2/sites-available/000-default.conf
 
 # VEBLEN Environment Variables
 ENV ADMINMAIL="Admin@veblengroup.com.au"
@@ -47,8 +59,13 @@ ENV MAILER_URL="smtp://Admin@veblengroup.com.au:kaerhqzoyzmkpqhq@smtp.gmail.com:
 ENV TRUSTED_HOSTS="localhost,127.0.0.1,*.railway.app,*.up.railway.app"
 ENV COMPOSER_MEMORY_LIMIT=-1
 
-# Set permissions
-RUN chown -R www-data:www-data /opt/kimai
+# Set proper permissions
+RUN chown -R www-data:www-data /opt/kimai \
+    && chmod -R 755 /opt/kimai \
+    && chmod -R 777 /opt/kimai/var
 
-EXPOSE 8080
+# Create index.php test file in public directory
+RUN echo "<?php phpinfo(); ?>" > /opt/kimai/public/test.php
+
+EXPOSE 80
 CMD ["apache2-foreground"]
