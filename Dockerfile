@@ -14,6 +14,10 @@ RUN apt-get update && apt-get install -y \
 RUN echo "memory_limit = 512M" >> /usr/local/etc/php/php.ini \
     && echo "max_execution_time = 300" >> /usr/local/etc/php/php.ini
 
+# Configure Apache for port 8080
+RUN echo "Listen 8080" > /etc/apache2/ports.conf \
+    && sed -i 's/:80/:8080/g' /etc/apache2/sites-available/000-default.conf
+
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
@@ -29,7 +33,7 @@ RUN git clone https://github.com/kimai/kimai.git /tmp/kimai \
 # Install dependencies with increased memory
 RUN php -d memory_limit=512M /usr/bin/composer install --no-dev --optimize-autoloader --no-interaction
 
-# Configure Apache
+# Configure Apache DocumentRoot
 ENV APACHE_DOCUMENT_ROOT /opt/kimai/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
 
@@ -46,5 +50,5 @@ ENV COMPOSER_MEMORY_LIMIT=-1
 # Set permissions
 RUN chown -R www-data:www-data /opt/kimai
 
-EXPOSE 80
+EXPOSE 8080
 CMD ["apache2-foreground"]
