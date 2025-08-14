@@ -23,11 +23,11 @@
 # ---------------------------------------------------------------------
 
 # Source base, one of: fpm, apache
-ARG BASE="fpm"
+ARG BASE="apache"
 # Kimai branch/tag to run
 ARG KIMAI="main"
 # Timezone for images
-ARG TIMEZONE="Europe/Berlin"
+ARG TIMEZONE="Australia/Brisbane"
 
 ###########################
 # Shared tools
@@ -41,7 +41,7 @@ FROM composer:latest AS composer
 ###########################
 
 # fpm alpine php extension base
-FROM php:8.3-fpm-alpine AS fpm-php-ext-base
+FROM php:8.3-fmp-alpine AS fmp-php-ext-base
 RUN apk add --no-cache \
     # build-tools
     autoconf \
@@ -119,10 +119,10 @@ FROM ${BASE}-php-ext-base AS php-ext-opcache
 RUN docker-php-ext-install -j$(nproc) opcache
 
 ###########################
-# fpm base build
+# fmp base build
 ###########################
 
-FROM php:8.3-fpm-alpine AS fpm-base
+FROM php:8.3-fmp-alpine AS fmp-base
 ARG TIMEZONE
 RUN apk add --no-cache \
         bash \
@@ -137,9 +137,9 @@ RUN apk add --no-cache \
         libxslt-dev \
         fcgi \
         tzdata && \
-    touch /use_fpm && \
-    sed -i "s/;ping.path/ping.path/g" /usr/local/etc/php-fpm.d/www.conf && \
-    sed -i "s/;access.suppress_path\[\] = \/ping/access.suppress_path\[\] = \/ping/g" /usr/local/etc/php-fpm.d/www.conf
+    touch /use_fmp && \
+    sed -i "s/;ping.path/ping.path/g" /usr/local/etc/php-fmp.d/www.conf && \
+    sed -i "s/;access.suppress_path\[\] = \/ping/access.suppress_path\[\] = \/ping/g" /usr/local/etc/php-fmp.d/www.conf
 
 EXPOSE 9000
 
@@ -166,17 +166,18 @@ RUN apt-get update && \
         libzip4 \
         libxslt1.1 \
         libfreetype6 \
-        unzip && \
-    echo "Listen 8001" > /etc/apache2/ports.conf && \
+        unzip \
+        curl && \
+    echo "Listen 80" > /etc/apache2/ports.conf && \
     a2enmod rewrite && \
     touch /use_apache
 
 COPY .docker/000-default.conf /etc/apache2/sites-available/000-default.conf
 
-EXPOSE 8001
+EXPOSE 80
 
 HEALTHCHECK --interval=20s --timeout=10s --retries=3 \
-    CMD curl -f http://127.0.0.1:8001 || exit 1
+    CMD curl -f http://127.0.0.1:80 || exit 1
 
 ###########################
 # global base build
@@ -259,21 +260,23 @@ RUN ln -snf /usr/share/zoneinfo/${TIMEZONE} /etc/localtime && echo ${TIMEZONE} >
 COPY .docker/dbtest.php /dbtest.php
 COPY .docker/entrypoint.sh /entrypoint.sh
 
-ENV DATABASE_URL="mysql://kimai:kimai@127.0.0.1:3306/kimai?charset=utf8mb4&serverVersion=8.3"
-ENV APP_SECRET=change_this_to_something_unique
-# The default container name for nginx is nginx
-ENV TRUSTED_PROXIES=nginx,localhost,127.0.0.1
-ENV MAILER_FROM=kimai@example.com
-ENV MAILER_URL=null://localhost
-ENV ADMINPASS=
-ENV ADMINMAIL=
+# VEBLEN Environment Variables
+ENV ADMINMAIL="Admin@veblengroup.com.au"
+ENV ADMINPASS="VeblenKimai2024!"
+ENV APP_ENV="prod"
+ENV APP_SECRET="veblen_kimai_2024_railway_secure_8X9mN2pQ7wR5tE3uY1oP6iA4sD8fG9hJ0kL2mN5vB7cX3zA1qW4eR6tY9uI0pA3sD"
+ENV CORS_ALLOW_ORIGIN="^https?://localhost(:[0-9]+)?$"
+ENV MAILER_FROM="Admin@veblengroup.com.au"
+ENV MAILER_URL="smtp://Admin@veblengroup.com.au:kaerhqzoyzmkpqhq@smtp.gmail.com:587"
+
+# Railway-specific environment variables
+ENV TRUSTED_PROXIES=nginx,localhost,127.0.0.1,*.railway.app,*.up.railway.app
+ENV TRUSTED_HOSTS=localhost,127.0.0.1,*.railway.app,*.up.railway.app
 ENV USER_ID=
 ENV GROUP_ID=
 # default values to configure composer behavior
 ENV COMPOSER_MEMORY_LIMIT=-1
 ENV COMPOSER_ALLOW_SUPERUSER=1
-
-VOLUME [ "/opt/kimai/var" ]
 
 CMD [ "/entrypoint.sh" ]
 
@@ -298,8 +301,6 @@ RUN \
     sed "s/128M/-1/g" /usr/local/etc/php/php.ini-development > /opt/kimai/php-cli.ini && \
     sed -i "s/env php/env -S php -c \/opt\/kimai\/php-cli.ini/g" /opt/kimai/bin/console && \
     /opt/kimai/bin/console kimai:version | awk '{print $2}' > /opt/kimai/version.txt
-ENV APP_ENV=dev
-ENV DATABASE_URL=
 ENV memory_limit=512M
 
 # the "prod" stage (production build) is configured as last stage in the file, as this is the default target in BuildKit
@@ -325,6 +326,4 @@ RUN \
     sed "s/128M/-1/g" /usr/local/etc/php/php.ini-development > /opt/kimai/php-cli.ini && \
     chown -R www-data:www-data /opt/kimai /usr/local/etc/php/php.ini && \
     /opt/kimai/bin/console kimai:version | awk '{print $2}' > /opt/kimai/version.txt
-ENV APP_ENV=prod
-ENV DATABASE_URL=
 ENV memory_limit=512M
